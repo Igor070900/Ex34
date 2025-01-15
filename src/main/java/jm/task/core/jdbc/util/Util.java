@@ -19,7 +19,6 @@ public class Util {
             System.out.println("Соединение удалось");
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
-            System.out.println("Соединение не удалось");
         }
         return connection;
     }
