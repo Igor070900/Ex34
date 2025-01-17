@@ -1,8 +1,10 @@
 package jm.task.core.jdbc.util;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import jm.task.core.jdbc.model.User;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
+
+import java.sql.*;
 
 public class Util {
 
@@ -14,13 +16,35 @@ public class Util {
     public static Connection getConnection() {
         Connection connection = null;
         try {
-            Class.forName(DB_DRIVER);
             connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD);
-            System.out.println("Соединение удалось");
-        } catch (ClassNotFoundException | SQLException e) {
+        } catch (SQLException e) {
+            System.err.println("Не удалось установить соединение с базой данных.");
             e.printStackTrace();
+
+            throw new RuntimeException("Ошибка при установлении соединения с базой данных.", e);
         }
         return connection;
     }
 
+    private static final SessionFactory sessionFactory = buildSessionFactory();
+
+    private static SessionFactory buildSessionFactory() {
+        SessionFactory sessionFactory = new Configuration()
+                .setProperty("hibernate.connection.driver_class", "com.mysql.jdbc.Driver")
+                .setProperty("hibernate.connection.url", DB_URL)
+                .setProperty("hibernate.connection.username", DB_USERNAME)
+                .setProperty("hibernate.connection.password", DB_PASSWORD)
+
+                .setProperty("hibernate.current_session_context_class", "thread")
+                .setProperty("hibernate.dialect", "org.hibernate.dialect.MySQLDialect")
+                .setProperty("hibernate.show_sql", "true")
+                .addAnnotatedClass(User.class)
+                .buildSessionFactory();
+
+        return sessionFactory;
+    }
+
+    public static SessionFactory getSessionFactory() {
+        return sessionFactory;
+    }
 }
